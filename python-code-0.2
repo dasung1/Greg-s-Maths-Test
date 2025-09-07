@@ -1,0 +1,145 @@
+import random
+import time
+
+# ---------------------------------------------------------
+# Function: create_question
+# Purpose: Generate a random maths question based on difficulty
+# Parameters:
+#     difficulty (string) - "easy", "medium", or "hard"
+# Returns:
+#     expression (string) - the maths problem as a string
+#     correct_answer (int) - the evaluated result of the problem
+# ---------------------------------------------------------
+def create_question(difficulty):
+    if difficulty == "easy":
+        number_range = (1, 10)        # Range of numbers for easy questions
+    elif difficulty == "medium":
+        number_range = (1, 25)        # Range of numbers for medium questions
+    else:  # hard
+        number_range = (1, 50)        # Range of numbers for hard questions
+
+    # Randomly generate two numbers within the chosen range
+    num1 = random.randint(*number_range)
+    num2 = random.randint(*number_range)
+
+    # Randomly choose an operator
+    operator = random.choice(["+", "-", "*"])
+
+    # Ensure subtraction does not result in a negative answer
+    if operator == "-" and num2 > num1:
+        num1, num2 = num2, num1
+
+    # Build the question as a string
+    expression = f"{num1} {operator} {num2}"
+
+    # Evaluate the expression to find the correct answer
+    correct_answer = eval(expression)
+    return expression, correct_answer
+
+
+# ---------------------------------------------------------
+# Function: ask_question
+# Purpose: Ask the user a single question, measure response time, and award points
+# Parameters:
+#     expression (string) - the maths problem
+#     correct_answer (int) - the correct result of the problem
+# Returns:
+#     score (int) - points awarded for the question
+#     user_input (int) - the user's answer (or None if invalid)
+#     elapsed_time (int) - time taken in seconds to answer
+# ---------------------------------------------------------
+def ask_question(expression, correct_answer):
+    print(f"\nWhat is {expression}?")
+    start_time = time.time()  # Record the start time before user input
+
+    try:
+        # Get the user's answer and convert to integer
+        user_input = int(input("Your answer: "))
+    except ValueError:
+        # Handle invalid input (e.g., letters instead of numbers)
+        print("Invalid input! Counted as incorrect.")
+        return 0, None, int(time.time() - start_time)
+
+    end_time = time.time()              # Record the end time after input
+    elapsed_time = end_time - start_time  # Calculate time taken
+
+    # Check correctness
+    if user_input == correct_answer:
+        # Award points based on speed
+        if elapsed_time <= 5:
+            score = 2
+        else:
+            score = 1
+        print(f"Correct! (+{score} point(s), answered in {elapsed_time:.2f} seconds)")
+    else:
+        score = 0
+        print(f"Incorrect. The correct answer was {correct_answer}.")
+
+    return score, user_input, int(elapsed_time)
+
+
+# ---------------------------------------------------------
+# Function: maths_quiz
+# Purpose: Main function to run the quiz, manage difficulty, questions, and results
+# ---------------------------------------------------------
+def maths_quiz():
+    # Welcome message
+    print("=== Welcome to the Maths Quiz ===")
+    print("Select difficulty level:")
+    print("1) Easy (5 questions)")
+    print("2) Medium (8 questions)")
+    print("3) Hard (12 questions)")
+
+    # Get difficulty choice from user
+    while True:
+        choice = input("Enter 1, 2 or 3: ").strip()
+        if choice == "1":
+            difficulty = "easy"
+            total_questions = 5
+            break
+        elif choice == "2":
+            difficulty = "medium"
+            total_questions = 8
+            break
+        elif choice == "3":
+            difficulty = "hard"
+            total_questions = 12
+            break
+        else:
+            print("Invalid selection. Please enter 1, 2, or 3.")
+
+    # Confirm chosen mode
+    print(f"\nYou selected {difficulty.capitalize()} mode.")
+    print("The quiz will now begin...\n")
+
+    # Initialise score and results list
+    total_score = 0
+    results = []
+
+    # Loop through the required number of questions
+    for question_number in range(1, total_questions + 1):
+        expression, correct_answer = create_question(difficulty)  # Generate question
+        print(f"Question {question_number}/{total_questions}")
+        score, user_input, elapsed_time = ask_question(expression, correct_answer)
+        total_score += score
+        results.append((expression, correct_answer, user_input, score, elapsed_time))
+
+    # Display final results
+    print("\n=== Quiz Completed ===")
+    print(f"Final Score: {total_score}/{total_questions * 2}")
+    percentage = round((total_score / (total_questions * 2)) * 100, 2)
+    print(f"Percentage: {percentage}%")
+
+    # Breakdown of performance
+    print("\n--- Question Breakdown ---")
+    print("No.  Question     Your Ans   Correct Ans   Score   Time(s)")
+    print("----------------------------------------------------------")
+    for index, (expr, correct, user_ans, score, time_taken) in enumerate(results, 1):
+        print(f"{index:<4} {expr:<11} {str(user_ans):<10} {correct:<12} {score:<6} {time_taken}")
+
+
+# ---------------------------------------------------------
+# Program Entry Point
+# ---------------------------------------------------------
+if __name__ == "__main__":
+    maths_quiz()
